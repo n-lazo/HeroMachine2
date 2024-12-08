@@ -1,0 +1,10 @@
+# Excluimos las carpetas con los archivos generados por dotnet
+
+bin/
+obj/
+
+twc/*
+.twc/.gitkeep
+
+twc-final/*
+.twc-final/.gitkeep
