@@ -1,66 +1,95 @@
 ﻿using System.Text;
 
-Console.WriteLine("Iniciando");
-
-const int numeroDeCiclos = 20;
-int contador = 0;
-
-string rutaActual = Directory.GetCurrentDirectory();
-string carpetaTwc = Path.Combine(rutaActual, "twc");
-string carpetaTwcFinal = Path.Combine(rutaActual, "twc-final");
-
-// Verificar existencia de carpetas
-if (!Directory.Exists(carpetaTwc))
+// Verificar que el argumento ciclos esté presente
+if (args.Length == 0 || !args.Contains("-c") && !args.Contains("--ciclos"))
 {
-    // Creamos el directorio
-    Directory.CreateDirectory(carpetaTwc);
-}
-
-if (!Directory.Exists(carpetaTwcFinal))
-{
-    Directory.CreateDirectory(carpetaTwcFinal);
-}
-
-// Obtener el primer archivo .twc
-string[] archivos = Directory.GetFiles(carpetaTwc, "*.twc");
-if (archivos.Length == 0)
-{
-    Console.WriteLine("No se encontraron archivos .twc en la carpeta 'twc'.");
+    Console.WriteLine("Uso: hm2 -c <numero_de_ciclos>");
     return;
 }
 
-// Iteraremos por cada archivo .twc
-for (int i = 0; i < archivos.Length; i++)
+// Obtener el valor del argumento ciclos
+int numeroDeCiclos = 20; // Valor predeterminado
+for (int i = 0; i < args.Length; i++)
 {
-    string rutaArchivoOriginal = archivos[i];
-    string idPersonajeOriginal = Path.GetFileNameWithoutExtension(rutaArchivoOriginal);
-
-    // Extraer la base del ID y el número
-    (string baseIdPersonaje, int numeroIdOriginal) = ExtraerBaseId(idPersonajeOriginal);
-
-    // Leer el archivo original una vez
-    byte[] datosOriginales = File.ReadAllBytes(rutaArchivoOriginal);
-
-    for (int j = 1; j <= numeroDeCiclos; j++)
+    if (args[i] == "-c" || args[i] == "--ciclos")
     {
-        int nuevoNumeroId = numeroIdOriginal + j;
-        string nuevoIdPersonaje = baseIdPersonaje + nuevoNumeroId;
+        if (i + 1 < args.Length && int.TryParse(args[i + 1], out int ciclos))
+        {
+            numeroDeCiclos = ciclos;
+        }
+        else
+        {
+            Console.WriteLine("El valor del argumento ciclos no es válido.");
+            return;
+        }
+    }
+}
 
-        byte[] datosModificados = ReemplazarIdEnDatos(
-            datosOriginales,
-            idPersonajeOriginal,
-            nuevoIdPersonaje
-        );
+DuplicarArchivos(numeroDeCiclos);
 
-        string nuevaRutaArchivo = Path.Combine(carpetaTwcFinal, $"{nuevoIdPersonaje}.twc");
-        File.WriteAllBytes(nuevaRutaArchivo, datosModificados);
+static void DuplicarArchivos(int numeroDeCiclos)
+{
+    Console.WriteLine("Iniciando");
 
-        contador++;
+    int contador = 0;
+
+    string rutaActual = Directory.GetCurrentDirectory();
+    string carpetaTwc = Path.Combine(rutaActual, "twc");
+    string carpetaTwcFinal = Path.Combine(rutaActual, "twc-final");
+
+    // Verificar existencia de carpetas
+    if (!Directory.Exists(carpetaTwc))
+    {
+        // Creamos el directorio
+        Directory.CreateDirectory(carpetaTwc);
     }
 
-    Console.WriteLine("Finalizado");
-    Console.WriteLine($"Cantidad de personajes generados: {contador}");
-    Console.WriteLine("Revisa la carpeta 'twc-final'");
+    if (!Directory.Exists(carpetaTwcFinal))
+    {
+        Directory.CreateDirectory(carpetaTwcFinal);
+    }
+
+    // Obtener el primer archivo .twc
+    string[] archivos = Directory.GetFiles(carpetaTwc, "*.twc");
+    if (archivos.Length == 0)
+    {
+        Console.WriteLine("No se encontraron archivos .twc en la carpeta 'twc'.");
+        return;
+    }
+
+    // Iteraremos por cada archivo .twc
+    for (int i = 0; i < archivos.Length; i++)
+    {
+        string rutaArchivoOriginal = archivos[i];
+        string idPersonajeOriginal = Path.GetFileNameWithoutExtension(rutaArchivoOriginal);
+
+        // Extraer la base del ID y el número
+        (string baseIdPersonaje, int numeroIdOriginal) = ExtraerBaseId(idPersonajeOriginal);
+
+        // Leer el archivo original una vez
+        byte[] datosOriginales = File.ReadAllBytes(rutaArchivoOriginal);
+
+        for (int j = 1; j <= numeroDeCiclos; j++)
+        {
+            int nuevoNumeroId = numeroIdOriginal + j;
+            string nuevoIdPersonaje = baseIdPersonaje + nuevoNumeroId;
+
+            byte[] datosModificados = ReemplazarIdEnDatos(
+                datosOriginales,
+                idPersonajeOriginal,
+                nuevoIdPersonaje
+            );
+
+            string nuevaRutaArchivo = Path.Combine(carpetaTwcFinal, $"{nuevoIdPersonaje}.twc");
+            File.WriteAllBytes(nuevaRutaArchivo, datosModificados);
+
+            contador++;
+        }
+
+        Console.WriteLine("Finalizado");
+        Console.WriteLine($"Cantidad de personajes generados: {contador}");
+        Console.WriteLine("Revisa la carpeta 'twc-final'");
+    }
 }
 
 static (string baseId, int numeroId) ExtraerBaseId(string idCompleto)
