@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <AssemblyName>hm2</AssemblyName>
     <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
 </Project>
